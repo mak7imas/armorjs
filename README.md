@@ -6,6 +6,21 @@ javascript library for armor project
 В отличии от JQuery библиотека расширяет возможности и дополняет новыми свойствами 
 непосредственно DOM элементы.
 
+Пример:
+ A(".selector").ext(
+   {
+    params: {
+     str: 'test'
+    },
+    
+    init: function() {
+     this.on("click", function(e) {
+      alert(this.params.str);
+     });
+    },
+   }
+ );
+
 Авторы проекта:
   Максим Андреев,
   Никлай Яремченко
