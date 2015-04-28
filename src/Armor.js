@@ -1,11 +1,9 @@
 /*
 
- Armorjs, a JavaScript library for input form.
+ Armorjs, a JavaScript library for armor project.
  (c) 2014-2015, Maksym Andreev
 
 */
-
-
 
 var A = function(a /*selector*/, b /*optional context*/) {
   var r, i;
