@@ -8,9 +8,6 @@ javascript library for armor project
 
 Пример:
 
-
- 
- 
   A(".selector").ext(
     {
     params: {
