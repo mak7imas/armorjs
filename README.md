@@ -9,6 +9,7 @@ javascript library for armor project
 Пример:
 
   A(".selector").ext(
+    
     {
     params: {
      str: 'test'
@@ -20,6 +21,7 @@ javascript library for armor project
      });
     },
    }
+   
   );
 
 Авторы проекта:
