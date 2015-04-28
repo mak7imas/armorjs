@@ -7,10 +7,12 @@ javascript library for armor project
 непосредственно DOM элементы.
 
 Пример:
- A(".selector").ext(
+
+
  
-   {
-   
+ 
+  A(".selector").ext(
+    {
     params: {
      str: 'test'
     },
@@ -21,8 +23,7 @@ javascript library for armor project
      });
     },
    }
-   
- );
+  );
 
 Авторы проекта:
   Максим Андреев,
