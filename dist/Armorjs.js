@@ -1,0 +1,454 @@
+/*
+
+ Armorjs, a JavaScript library for input form.
+ (c) 2014-2015, Maksym Andreev
+
+*/
+
+
+
+var A = function(a /*selector*/, b /*optional context*/) {
+  var r, i;
+  try {
+    r = (b || document).querySelectorAll(a);
+    if (A.isArrayType(r) && r.length == 1 && a.substr(0 , 1) == "#") r = r[0];
+    A.ext(r, A.domlst);
+  } catch(e) {
+    r = null;
+  }
+  return r;
+};
+window.A = A;
+
+A.ui = {};
+
+A.each = function(o, callback) {
+  var i = 0, l = o.length;
+  if (A.isArrayType(o)) {
+    for (; i < l; i++) {
+      if (callback.call(o[i], i, o[i]) === false) break;
+    }
+  } else {
+    return callback.call(o, i, o);
+  }
+  return o;
+};
+
+A.clone = function (obj) {
+  //obj = obj || {};
+  var c, i = 0, l = obj.length;
+  if (!obj || "object" != typeof obj) return obj;
+  if (obj instanceof Date) {
+    c = new Date();
+    c.setTime(obj.getTime());
+    return c;
+  }
+  if (obj instanceof Array) {
+    c = [];
+    for (; i < l; i++) {
+      c[i] = clone(obj[i]);
+    }
+    return c;
+  }
+  if (obj instanceof Object) {
+    c = {};
+    for (var a in obj) {
+      if (obj.hasOwnProperty(a)) c[a] = A.clone(obj[a]);
+    }
+    return c;
+  }
+  return obj;
+};
+
+A.ext = function (dest) {
+  var ss = Array.prototype.slice.call(arguments, 1), p, i, s;
+  for (i = 0; i < ss.length; i++) {
+    s = ss[i] || {};
+    for (p in s) {
+      if (s.hasOwnProperty(p)) {
+        dest[p] = A.clone(s[p]);
+      }
+    }
+  }
+  return dest;
+};
+;/* ajax */
+A.xhr = function() {
+  return new XMLHttpRequest();
+};
+
+A.stor = function() {
+  return window.localStorage;
+};
+
+A.json = function(method, url, par, cb, cbe) {
+  var x = A.xhr();
+  x.onreadystatechange = function() {
+    if (x.readyState == 4 && x.status == 200) {
+      var rj, rr = x.responseText;
+			try {
+				if(window.JSON) {
+					rj = JSON.parse(rr);
+				} else {
+          /*jslint evil: true */
+					rj = eval("("+rr+")");
+				}
+        cb(rj);
+			} catch (e) {
+			  if (cbe) cbe(e);
+			}
+    }
+  };
+  if (par instanceof Object) { //json param
+    var s='';
+    for (var p in par) {
+      if (s) s+="&";
+      s += p + "=" + encodeURIComponent(par[p]);
+    }
+    par = s;
+  }
+  x.open(method, url, true);
+  if (method === "POST") {
+    x.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    x.send(par);
+  } else if (method === "GET") {
+    if (par) url += (url.indexOf("?") == -1 ? "?" : "&") + par;
+    x.open("GET", url);
+    x.send();
+  }
+  return x;
+};
+;/* common */
+A.isArray = function (o) {
+  return (Object.prototype.toString.call(o) === '[object Array]');
+};
+
+A.isArrayType = function(o) {
+	return (typeof o.length === "number" && o.tagName === undefined);
+};
+
+A.nvl = function (val, defval) {
+  defval = defval || ""; 
+  return val || defval;
+};
+
+A.on = function(el, type, fn, capture) {
+  if (el.addEventListener) {
+    el.addEventListener(type, fn, !!capture);
+  } else if (el.attachEvent) {
+    el.attachEvent("on" + type, fn);
+  } 
+  return el;
+};
+
+A.off = function(el, type, fn, capture) {
+  if (el.removeEventListener) {
+    el.removeEventListener(type, fn, !!capture);
+  } else if (el.detachEvent) {
+    el.detachEvent("on" + type, fn);
+  }
+  return el;
+};
+
+A.onload = function(fn) {
+  A.on(window, "load", fn);
+};
+;/* dict */
+A.dict = {
+  params: {
+    url:'armorjs_dict.php',
+    dctlst: [],
+  },
+
+  load: function (name, hash, cb, cbl) {
+    var _this = this, dct, dctlst = this.params.dctlst;
+    dct = _this._getStorDct(name, hash);
+    if (!dct) {
+      if (cbl) cbl();
+      A.json("GET", this.params.url, {"name": name, "hash": hash}, function (dct) { // dct = {name, hach, items}
+        _this._setStorDct(dct);
+        if (cb) cb(dct);
+      });
+    } else {
+      if (cb) cb(dct);
+    }
+  },
+
+  _setStorDct: function(dct) { // dct = {name, hach, items}
+    var stor = A.stor(), dctlst = this.params.dctlst;
+    if (stor) {
+      try {
+        stor.setItem(dct.name, JSON.stringify(dct));
+        dctlst[name] = dct; 
+      } catch (e) {
+        console.log("storage is full");
+        stor.clear();
+      }
+    }
+  },
+
+  _getStorDct: function(name, hash) {
+    var dct, stor = A.stor(), dctlst = this.params.dctlst;
+    dct = dctlst[name];
+    if (!dct) {
+      if (stor) {
+        try {
+          dct = JSON.parse(stor.getItem(name));
+          if (!dct || (hash && dct.hash != hash)) 
+            dct = null;
+          else
+            dctlst[name] = dct;
+        } catch(e) {
+          stor.removeItem(name);
+          return null;
+        }
+      }
+    }
+    return dct;
+  }
+};
+;/* domlst */
+A.domlst = {
+  each: function(callback) {
+    return A.each(this, callback);
+  },
+
+  ext: function(obj) {
+    this.each(function(i, o) {
+      var r = A.ext(o, A.domlst, obj);
+      if (o.init) o.init();
+      return r;
+    });
+    return this;
+  },
+
+  on: function(type, fn, capture) {
+    this.each(function(i, o) {
+      A.on(o, type, fn, capture);
+    });
+    return this;
+  },
+
+  off: function(type, fn, capture) {
+    this.each(function(i, o) {
+      A.off(o, type, fn, capture);
+    });
+    return this;
+  },
+
+  attr: function(name, val) {
+    return this.each(function(i, o) {
+      if (val) o.setAttribute(name, val);
+      return o.getAttribute(name);
+    });
+  }
+};
+;/* edit  */
+A.ui.edit = {
+  params: {
+    type: 'C' 
+  },
+
+  init: function() {
+    this._initParams();
+    this.on("blur", function(e) {
+      this._toCase();
+      this._valid();
+    });
+  },
+
+  _initParams: function() {
+    var t;
+    switch((t = this.attr("COLTYPE"))) {
+    case "C": this.params.type=t; break;
+    case "D": this.params.type=t; break;
+    case "T": this.params.type=t; break;
+    }
+  },
+
+  _toCase: function() {
+    this.value = this.value.toLocaleUpperCase();
+  },
+
+  _valid: function() {
+    try {
+      switch(this.params.type) {
+        case "T":
+        case "D": this._validDate(); break;
+        case "N": this._validNumber(); break;
+        case "I": this._validInteger(); break;
+        case "H": this._validHoursMinutes(); break;
+      }
+    } catch(e) {
+      throw new Error("err");
+    }
+    return true;
+  },
+
+  valt: function() {
+    return this.value;
+  },
+
+  val: function(newv) {
+    newv = newv || "";
+    var curv = this.value;
+    if (curv != newv)
+      this.value = newv;
+    return this.value;
+  },
+
+  _validDate: function() {
+    var v = this.valt();
+    if (!v) return;
+    v = v.split(" ");
+    var d = A.nvl(v[0]), t = A.nvl(v[1]), cd = new Date();
+    //Date
+    d = d.replace(/[\.,/,\:,\-,\,]/g, ".");
+    if ((d.indexOf(".") == -1) && (d.length>1)) {
+      switch(d.length){
+      case 2: d = d+"." + (cd.getMonth() + 1) + "." + cd.getFullYear(); break;
+      case 4: d = d.substr(0, 2) + "." + d.substr(2, 2) + "." + cd.getFullYear(); break;
+      case 6:
+      case 8: d = d.substr(0, 2) + "." + d.substr(2, 2) + "." + d.substr(4); break;
+      }
+    }
+    var a = d.split(".");
+    var dd = a[0], mm = a[1], yy = a[2];
+
+    if (!dd) dd = cd.getDate();
+    if (!mm) mm = cd.getMonth() + 1;
+    if (!yy) yy = cd.getFullYear();
+    if (yy.length == 2) yy = yy < 20 ? "20" +yy : "19" + yy;
+    //Time
+    t = t.replace(/[\.,/,\:,\-,\,]/g, ":");
+    if ((t.indexOf(":") == -1) && (t.length > 1)) {
+      switch (t.length){
+      case 2: t = t + ":" + "00:00"; break;
+      case 4: t = t.substr(0,2) + ":" + t.substr(2,2) + ":00"; break;
+      case 6: t = t.substr(0,2) + ":" + t.substr(2,2) + ":" + t.substr(4); break;
+      }
+    }
+
+    a=t.split(":");
+    var hh = a[0], mi = a[1], ss = a[2];
+    if (!hh) hh = "00";
+    if (!mi) mi = "00";
+    if (!ss) ss = "00";
+
+    cd = new Date(yy,mm-1,dd,hh,mi,ss);
+    dd = cd.getDate();
+    mm = cd.getMonth();
+    yy = cd.getFullYear();
+    hh = cd.getHours();
+    mi = cd.getMinutes();
+    ss = cd.getSeconds();
+
+    if (isNaN(dd) || isNaN(mm) || isNaN(yy) || isNaN(hh) || isNaN(mi) || isNaN(ss)) {
+      throw new Error("Error of date format");
+    }
+    var z1 = function (s) {
+      return (String(s).length < 2 ? "0" : "") + s;
+    };
+
+    if (this.params.type === "T")
+      this.val(z1(dd) + "." + z1(mm+1) + "." + yy + " " +z1(hh) + ":" + z1(mi) + ":" + z1(ss));
+    else
+      this.val(z1(dd) + "." + z1(mm+1) + "." + yy);
+  },
+
+  _validHoursMinutes: function() {
+    var v = this.valt();
+    if (!v) return;
+    // Time
+    var t = v.replace(/[\.,/,\:,\-,\,]/g, ":");
+    if ((t.indexOf(":") == -1) && (t.length > 1)) {
+      switch (t.length){
+        case 2: t = t + ":00"; break;
+        case 3: t = t.substr(0,2) + ":" + t.substr(2,1) + "0"; break;
+        case 4: t = t.substr(0,2) + ":" + t.substr(2,2); break;
+      }
+    }
+    var a = t.split(":");
+    var hh = A.nvl(a[0]), mi = A.nvl(a[1]);
+    if (!hh) hh = "00";
+    if (parseInt(hh) > 23) hh = "23";
+    if (!mi) mi = "00";
+    if (parseInt(mi) > 59) mi = "59";
+
+    var z1 = function (s) {
+      return String(s).length<2?"0" : "" + s;
+    };
+    this.val(z1(hh) + ":" + z1(mi));
+  },
+
+  _validNumber: function() {
+    var v = this.valt();
+    if (!v) return;
+    v = v.replace(/[\,]/g, ".");
+    v = parseFloat(v);
+    if (isNaN(v)) throw new Error("Error number format");
+    v = String(v).replace(/[\.]/g, ",");
+    this.val(v);
+  },
+
+  _validInteger: function() {
+    var v = this.valt();
+    if (!v) return;
+    v = parseInt(v);
+    if (isNaN(v)) throw new Error("Error number format");
+    this.val(v);
+  }
+};
+;/* select  */
+A.ui.select = {
+  params: {
+    dictName: '',
+    dictHash: '',
+    value: '',
+    prefval: '',
+    isOptLoaded: false 
+  },
+
+  init: function() {
+    var _this = this;
+    this._initParams();
+    this._loadOptions();
+  },            
+
+  _initParams: function() {
+    var p = this.params; 
+    p.dictName = this.attr("DICTNAME");
+    p.dictHash = this.attr("DICTHASH");
+    p.value = this.attr("VALUE") || '';
+    p.prefval = this.attr("PREFVAL") || '';
+  },
+
+  _loadOptions: function() {
+    var p = this.params, _this = this;
+    if (p.isOptLoaded) return;
+    A.dict.load(p.dictName, p.dictHash,  function (dct) {
+      var apv = p.prefval.split(","), i, itm, a1 = [], a2 = [];
+      for (i=0, l=dct.items.length; i<l; i++) {
+        var isp = false;
+        itm = dct.items[i];
+        itm.sel = itm.cd == p.value;
+        for (var j=0; j<apv.length; j++) {
+          if (itm.cd == apv[j]) {
+            a1[j] = itm;
+            isp = true;
+            break;
+          }
+        } 
+        if (!isp) a2.push(itm);
+      }
+      a1 = a1.concat(a2);
+      _this.options.length = 0;
+      _this.options.add(new Option(' ', '-', 1));
+      for (i=0, l=a1.length; i<l; i++) {
+        itm = a1[i];
+        _this.options.add(new Option(itm.txt, itm.cd, 0, itm.sel));
+      }
+      p.isOptLoaded = true;
+    });
+  }
+};
