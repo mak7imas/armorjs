@@ -5,13 +5,13 @@
 
 */
 
-var A = function(a /*selector*/, b /*optional context*/) {
+var A = function(a /*selector*/ , b /*optional context*/ ) {
   var r, i;
   try {
     r = (b || document).querySelectorAll(a);
-    if (A.isArrayType(r) && r.length == 1 && a.substr(0 , 1) == "#") r = r[0];
+    if (A.isArrayType(r) && r.length == 1 && a.substr(0, 1) == "#") r = r[0];
     A.ext(r, A.domlst);
-  } catch(e) {
+  } catch (e) {
     r = null;
   }
   return r;
@@ -21,7 +21,8 @@ window.A = A;
 A.ui = {};
 
 A.each = function(o, callback) {
-  var i = 0, l = o.length;
+  var i = 0,
+    l = o.length;
   if (A.isArrayType(o)) {
     for (; i < l; i++) {
       if (callback.call(o[i], i, o[i]) === false) break;
@@ -32,9 +33,10 @@ A.each = function(o, callback) {
   return o;
 };
 
-A.clone = function (obj) {
+A.clone = function(obj) {
   //obj = obj || {};
-  var c, i = 0, l = obj.length;
+  var c, i = 0,
+    l = obj.length;
   if (!obj || "object" != typeof obj) return obj;
   if (obj instanceof Date) {
     c = new Date();
@@ -58,8 +60,9 @@ A.clone = function (obj) {
   return obj;
 };
 
-A.ext = function (dest) {
-  var ss = Array.prototype.slice.call(arguments, 1), p, i, s;
+A.ext = function(dest) {
+  var ss = Array.prototype.slice.call(arguments, 1),
+    p, i, s;
   for (i = 0; i < ss.length; i++) {
     s = ss[i] || {};
     for (p in s) {
