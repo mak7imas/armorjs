@@ -1,6 +1,6 @@
 /* common */
 A.isArray = function (o) {
-  return (Object.prototype.toString.call(o) === '[object Array]');
+  return Array.isArray?Array.isArray(o):(Object.prototype.toString.call(o) === '[object Array]');
 };
 
 A.isArrayType = function(o) {
@@ -8,7 +8,7 @@ A.isArrayType = function(o) {
 };
 
 A.nvl = function (val, defval) {
-  defval = defval || ""; 
+  defval = defval || "";
   return val || defval;
 };
 
@@ -17,7 +17,7 @@ A.on = function(el, type, fn, capture) {
     el.addEventListener(type, fn, !!capture);
   } else if (el.attachEvent) {
     el.attachEvent("on" + type, fn);
-  } 
+  }
   return el;
 };
 
