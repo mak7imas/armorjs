@@ -1,9 +1,6 @@
-/*
+(function(){
 
- Armorjs, a JavaScript library for armor project.
- (c) 2014-2015, Maksym Andreev
-
-*/
+"use strict";
 
 var A = function(a /*selector*/ , b /*optional context*/ ) {
   var r, i;
@@ -16,7 +13,8 @@ var A = function(a /*selector*/ , b /*optional context*/ ) {
   }
   return r;
 };
-window.A = A;
+
+window.A = window.armorjs = A;
 
 A.ui = {};
 
@@ -46,7 +44,7 @@ A.clone = function(obj) {
   if (obj instanceof Array) {
     c = [];
     for (; i < l; i++) {
-      c[i] = clone(obj[i]);
+      c[i] = A.clone(obj[i]);
     }
     return c;
   }
@@ -73,3 +71,5 @@ A.ext = function(dest) {
   }
   return dest;
 };
+
+})();
