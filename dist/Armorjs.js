@@ -1,29 +1,32 @@
-/*
+(function(){
 
- Armorjs, a JavaScript library for input form.
- (c) 2014-2015, Maksym Andreev
+"use strict";
 
-*/
-
-
-
-var A = function(a /*selector*/, b /*optional context*/) {
-  var r, i;
+var A = function(selector , context /*optional*/) {
+  context = context || document;
+  var r, i, t = /^<(\w+)\s*\/?>(?:<\/\1>|)$/, p;
   try {
-    r = (b || document).querySelectorAll(a);
-    if (A.isArrayType(r) && r.length == 1 && a.substr(0 , 1) == "#") r = r[0];
+    p = t.exec(selector);
+		if (p) {
+			r = context.createElement(p[1]);
+		} else {
+      r = context.querySelectorAll(selector);
+      if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
+    }
     A.ext(r, A.domlst);
-  } catch(e) {
+  } catch (e) {
     r = null;
   }
   return r;
 };
-window.A = A;
+
+window.A = window.armorjs = A;
 
 A.ui = {};
 
 A.each = function(o, callback) {
-  var i = 0, l = o.length;
+  var i = 0,
+    l = o.length;
   if (A.isArrayType(o)) {
     for (; i < l; i++) {
       if (callback.call(o[i], i, o[i]) === false) break;
@@ -34,9 +37,10 @@ A.each = function(o, callback) {
   return o;
 };
 
-A.clone = function (obj) {
+A.clone = function(obj) {
   //obj = obj || {};
-  var c, i = 0, l = obj.length;
+  var c, i = 0,
+    l = obj.length;
   if (!obj || "object" != typeof obj) return obj;
   if (obj instanceof Date) {
     c = new Date();
@@ -46,7 +50,7 @@ A.clone = function (obj) {
   if (obj instanceof Array) {
     c = [];
     for (; i < l; i++) {
-      c[i] = clone(obj[i]);
+      c[i] = A.clone(obj[i]);
     }
     return c;
   }
@@ -60,8 +64,9 @@ A.clone = function (obj) {
   return obj;
 };
 
-A.ext = function (dest) {
-  var ss = Array.prototype.slice.call(arguments, 1), p, i, s;
+A.ext = function(dest) {
+  var ss = Array.prototype.slice.call(arguments, 1),
+    p, i, s;
   for (i = 0; i < ss.length; i++) {
     s = ss[i] || {};
     for (p in s) {
@@ -72,7 +77,8 @@ A.ext = function (dest) {
   }
   return dest;
 };
-;/* ajax */
+
+})();;/* ajax */
 A.xhr = function() {
   return new XMLHttpRequest();
 };
@@ -120,15 +126,23 @@ A.json = function(method, url, par, cb, cbe) {
 };
 ;/* common */
 A.isArray = function (o) {
-  return (Object.prototype.toString.call(o) === '[object Array]');
+  return Array.isArray?Array.isArray(o):(Object.prototype.toString.call(o) === '[object Array]');
 };
 
 A.isArrayType = function(o) {
 	return (typeof o.length === "number" && o.tagName === undefined);
 };
 
+A.isObject = function(o) {
+  return (!!o) && (o.constructor === Object);
+};
+
+A.isString = function(o) {
+  return (!!o) && (o.constructor === String);
+};
+
 A.nvl = function (val, defval) {
-  defval = defval || ""; 
+  defval = defval || "";
   return val || defval;
 };
 
@@ -137,7 +151,7 @@ A.on = function(el, type, fn, capture) {
     el.addEventListener(type, fn, !!capture);
   } else if (el.attachEvent) {
     el.attachEvent("on" + type, fn);
-  } 
+  }
   return el;
 };
 
@@ -241,9 +255,66 @@ A.domlst = {
       if (val) o.setAttribute(name, val);
       return o.getAttribute(name);
     });
+  },
+
+  find: function(selector) {
+    return this.each(function(i, o) {
+      return A(selector, o);
+    });
+  },
+
+  css: function(cssjson, val) {
+    return this.each(function(i, o) {
+      var s = o.style || {}, a = cssjson;
+      if (A.isString(a)) {
+        if (!val) return s[a];
+        if (s.hasOwnProperty(a)) s[a] = val;
+      } else {
+        for (a in cssjson) {
+          if (s.hasOwnProperty(a)) s[a] = cssjson[a];
+        }
+      }
+    });
   }
+
 };
-;/* edit  */
+;armorjs.env = {};
+
+(function(){
+
+  "use strict";
+
+  if (navigator.userAgent.indexOf("Mobile")!=-1 || navigator.userAgent.indexOf("Windows Phone")!=-1)
+    armorjs.env.mobile = true;
+  if (armorjs.env.mobile || navigator.userAgent.indexOf("iPad")!=-1 || navigator.userAgent.indexOf("Android")!=-1)
+    armorjs.env.touch = true;
+  if (navigator.userAgent.indexOf('Opera')!=-1)
+    armorjs.env.isOpera=true;
+  else {
+    armorjs.env.isIE=!!document.all || (navigator.userAgent.indexOf("Trident") !== -1);
+    armorjs.env.isFF=(navigator.userAgent.indexOf("Firefox")!=-1);
+    armorjs.env.isWebKit=(navigator.userAgent.indexOf("KHTML")!=-1);
+    armorjs.env.isSafari=armorjs.env.isWebKit && (navigator.userAgent.indexOf('Mac')!=-1);
+  }
+
+  if(navigator.userAgent.toLowerCase().indexOf("android")!=-1){
+    armorjs.env.isAndroid = true;
+    if(navigator.userAgent.toLowerCase().indexOf("trident")){
+      armorjs.env.isAndroid = false;
+      armorjs.env.isIEMobile = true;
+    }
+  }
+
+  armorjs.env.set = function(name, val){
+    armorjs.env[name] = val;
+  };
+
+  armorjs.env.unset = function(name){
+    delete armorjs.env[name];
+  };
+
+})();;/* edit  */
+
 A.ui.edit = {
   params: {
     type: 'C' 

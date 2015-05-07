@@ -1,29 +1,32 @@
-/*
+(function(){
 
- Armorjs, a JavaScript library for input form.
- (c) 2014-2015, Maksym Andreev
+"use strict";
 
-*/
-
-
-
-var A = function(a /*selector*/, b /*optional context*/) {
-  var r, i;
+var A = function(selector , context /*optional*/) {
+  context = context || document;
+  var r, i, t = /^<(\w+)\s*\/?>(?:<\/\1>|)$/, p;
   try {
-    r = (b || document).querySelectorAll(a);
-    if (A.isArrayType(r) && r.length == 1 && a.substr(0 , 1) == "#") r = r[0];
+    p = t.exec(selector);
+		if (p) {
+			r = context.createElement(p[1]);
+		} else {
+      r = context.querySelectorAll(selector);
+      if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
+    }
     A.ext(r, A.domlst);
-  } catch(e) {
+  } catch (e) {
     r = null;
   }
   return r;
 };
-window.A = A;
+
+window.A = window.armorjs = A;
 
 A.ui = {};
 
 A.each = function(o, callback) {
-  var i = 0, l = o.length;
+  var i = 0,
+    l = o.length;
   if (A.isArrayType(o)) {
     for (; i < l; i++) {
       if (callback.call(o[i], i, o[i]) === false) break;
@@ -34,9 +37,10 @@ A.each = function(o, callback) {
   return o;
 };
 
-A.clone = function (obj) {
+A.clone = function(obj) {
   //obj = obj || {};
-  var c, i = 0, l = obj.length;
+  var c, i = 0,
+    l = obj.length;
   if (!obj || "object" != typeof obj) return obj;
   if (obj instanceof Date) {
     c = new Date();
@@ -46,7 +50,7 @@ A.clone = function (obj) {
   if (obj instanceof Array) {
     c = [];
     for (; i < l; i++) {
-      c[i] = clone(obj[i]);
+      c[i] = A.clone(obj[i]);
     }
     return c;
   }
@@ -60,8 +64,9 @@ A.clone = function (obj) {
   return obj;
 };
 
-A.ext = function (dest) {
-  var ss = Array.prototype.slice.call(arguments, 1), p, i, s;
+A.ext = function(dest) {
+  var ss = Array.prototype.slice.call(arguments, 1),
+    p, i, s;
   for (i = 0; i < ss.length; i++) {
     s = ss[i] || {};
     for (p in s) {
@@ -72,3 +77,5 @@ A.ext = function (dest) {
   }
   return dest;
 };
+
+})();

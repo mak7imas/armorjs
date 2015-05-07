@@ -32,5 +32,26 @@ A.domlst = {
       if (val) o.setAttribute(name, val);
       return o.getAttribute(name);
     });
+  },
+
+  find: function(selector) {
+    return this.each(function(i, o) {
+      return A(selector, o);
+    });
+  },
+
+  css: function(cssjson, val) {
+    return this.each(function(i, o) {
+      var s = o.style || {}, a = cssjson;
+      if (A.isString(a)) {
+        if (!val) return s[a];
+        if (s.hasOwnProperty(a)) s[a] = val;
+      } else {
+        for (a in cssjson) {
+          if (s.hasOwnProperty(a)) s[a] = cssjson[a];
+        }
+      }
+    });
   }
+
 };
