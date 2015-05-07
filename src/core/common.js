@@ -7,6 +7,14 @@ A.isArrayType = function(o) {
 	return (typeof o.length === "number" && o.tagName === undefined);
 };
 
+A.isObject = function(o) {
+  return (!!o) && (o.constructor === Object);
+};
+
+A.isString = function(o) {
+  return (!!o) && (o.constructor === String);
+};
+
 A.nvl = function (val, defval) {
   defval = defval || "";
   return val || defval;

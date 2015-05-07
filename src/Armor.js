@@ -6,7 +6,7 @@ var A = function(selector , context /*optional*/) {
   var r, i;
   try {
     r = (context || document).querySelectorAll(selector);
-    if (A.isArrayType(r) && r.length == 1 && a.substr(0, 1) == "#") r = r[0];
+    if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
     A.ext(r, A.domlst);
   } catch (e) {
     r = null;

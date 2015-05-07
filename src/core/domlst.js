@@ -38,5 +38,16 @@ A.domlst = {
     return this.each(function(i, o) {
       return A(selector, o);
     });
+  },
+
+  css: function(cssjson) {
+    return this.each(function(i, o) {
+      var s = o.style || {};
+      if (A.isString(cssjson)) return s[cssjson];
+      for (var a in cssjson) {
+        if (s.hasOwnProperty(a)) s[a] = cssjson[a];
+      }
+    });
   }
+
 };

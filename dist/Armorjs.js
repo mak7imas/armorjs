@@ -6,7 +6,7 @@ var A = function(selector , context /*optional*/) {
   var r, i;
   try {
     r = (context || document).querySelectorAll(selector);
-    if (A.isArrayType(r) && r.length == 1 && a.substr(0, 1) == "#") r = r[0];
+    if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
     A.ext(r, A.domlst);
   } catch (e) {
     r = null;
@@ -125,6 +125,14 @@ A.isArray = function (o) {
 
 A.isArrayType = function(o) {
 	return (typeof o.length === "number" && o.tagName === undefined);
+};
+
+A.isObject = function(o) {
+  return (!!o) && (o.constructor === Object);
+};
+
+A.isString = function(o) {
+  return (!!o) && (o.constructor === String);
 };
 
 A.nvl = function (val, defval) {
@@ -247,7 +255,18 @@ A.domlst = {
     return this.each(function(i, o) {
       return A(selector, o);
     });
+  },
+
+  css: function(cssjson) {
+    return this.each(function(i, o) {
+      var s = o.style || {};
+      if (A.isString(cssjson)) return s[cssjson];
+      for (var a in cssjson) {
+        if (s.hasOwnProperty(a)) s[a] = cssjson[a];
+      }
+    });
   }
+
 };
 ;armorjs.env = {};
 
