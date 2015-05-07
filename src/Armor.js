@@ -3,10 +3,16 @@
 "use strict";
 
 var A = function(selector , context /*optional*/) {
-  var r, i;
+  context = context || document;
+  var r, i, t = /^<(\w+)\s*\/?>(?:<\/\1>|)$/, p;
   try {
-    r = (context || document).querySelectorAll(selector);
-    if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
+    p = t.exec(selector);
+		if (p) {
+			r = context.createElement(p[1]);
+		} else {
+      r = context.querySelectorAll(selector);
+      if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
+    }
     A.ext(r, A.domlst);
   } catch (e) {
     r = null;
