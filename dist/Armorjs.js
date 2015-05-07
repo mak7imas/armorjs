@@ -1,3 +1,7 @@
+/*
+  Armorjs.js
+*/
+
 (function(){
 
 "use strict";
@@ -7,9 +11,9 @@ var A = function(selector , context /*optional*/) {
   var r, i, t = /^<(\w+)\s*\/?>(?:<\/\1>|)$/, p;
   try {
     p = t.exec(selector);
-		if (p) {
-			r = context.createElement(p[1]);
-		} else {
+    if (p) {
+      r = context.createElement(p[1]);
+    } else {
       r = context.querySelectorAll(selector);
       if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
     }
