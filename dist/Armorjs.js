@@ -10,8 +10,9 @@ var A = function(selector , context /*optional*/) {
   context = context || document;
   var r, i, t = /^<(\w+)\s*\/?>(?:<\/\1>|)$/, p;
   try {
-    p = t.exec(selector);
-    if (p) {
+    if (A.isObject(selector)) {
+      r = selector;
+    } else if ((p = t.exec(selector))) {
       r = context.createElement(p[1]);
     } else {
       r = context.querySelectorAll(selector);
