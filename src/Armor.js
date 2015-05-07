@@ -2,10 +2,10 @@
 
 "use strict";
 
-var A = function(a /*selector*/ , b /*optional context*/ ) {
+var A = function(selector , context /*optional*/) {
   var r, i;
   try {
-    r = (b || document).querySelectorAll(a);
+    r = (context || document).querySelectorAll(selector);
     if (A.isArrayType(r) && r.length == 1 && a.substr(0, 1) == "#") r = r[0];
     A.ext(r, A.domlst);
   } catch (e) {

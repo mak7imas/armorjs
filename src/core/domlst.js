@@ -32,5 +32,11 @@ A.domlst = {
       if (val) o.setAttribute(name, val);
       return o.getAttribute(name);
     });
+  },
+
+  find: function(selector) {
+    return this.each(function(i, o) {
+      return A(selector, o);
+    });
   }
 };
