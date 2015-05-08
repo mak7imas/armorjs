@@ -2,20 +2,26 @@
   Armorjs.js
 */
 
-(function(){
+(function() {
 
 "use strict";
 
+var _istag = /^<(\w+)\s*\/?>(?:<\/\1>|)$/;
+
 var A = function(selector , context /*optional*/) {
-  context = context || document;
-  var r, i, t = /^<(\w+)\s*\/?>(?:<\/\1>|)$/, p;
+  var r, p, c = context || document;
   try {
     if (A.isObject(selector)) {
       r = selector;
-    } else if ((p = t.exec(selector))) {
-      r = context.createElement(p[1]);
+    } else if ((p = _istag.exec(selector))) {
+      r = document.createElement(p[1]);
+      if (A.isObject((c = context))) {
+        for (p in c) {
+          r.setAttribute(p, c[p]);
+        }
+      }
     } else {
-      r = context.querySelectorAll(selector);
+      r = c.querySelectorAll(selector);
       if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
     }
     A.ext(r, A.domlst);
@@ -262,16 +268,24 @@ A.domlst = {
     return this;
   },
 
-  attr: function(name, val) {
-    return this.each(function(i, o) {
-      if (val) o.setAttribute(name, val);
-      return o.getAttribute(name);
-    });
-  },
-
   find: function(selector) {
     return this.each(function(i, o) {
       return A(selector, o);
+    });
+  },
+
+  attr: function(namejson, val) {
+    return this.each(function(i, o) {
+      var a = namejson, p;
+      if (A.isString(a)) {
+        if (!val) return o.getAttribute(a);
+        o.setAttribute(a, val);
+      } else {
+        for (p in a) {
+          o.setAttribute(p, a[p]);
+        }
+      }
+      return o;
     });
   },
 

@@ -27,16 +27,24 @@ A.domlst = {
     return this;
   },
 
-  attr: function(name, val) {
-    return this.each(function(i, o) {
-      if (val) o.setAttribute(name, val);
-      return o.getAttribute(name);
-    });
-  },
-
   find: function(selector) {
     return this.each(function(i, o) {
       return A(selector, o);
+    });
+  },
+
+  attr: function(namejson, val) {
+    return this.each(function(i, o) {
+      var a = namejson, p;
+      if (A.isString(a)) {
+        if (!val) return o.getAttribute(a);
+        o.setAttribute(a, val);
+      } else {
+        for (p in a) {
+          o.setAttribute(p, a[p]);
+        }
+      }
+      return o;
     });
   },
 
