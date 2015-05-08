@@ -146,7 +146,7 @@ A.isString = function(o) {
   return (!!o) && (o.constructor === String);
 };
 
-A.nvl = function (val, defval) {
+A.nvl = function (val, defval) { // null to "" || defval
   defval = defval || "";
   return val || defval;
 };
@@ -167,6 +167,13 @@ A.off = function(el, type, fn, capture) {
     el.detachEvent("on" + type, fn);
   }
   return el;
+};
+
+A.curStyle = function(o, name){
+	if (o.currentStyle)
+		return x.currentStyle[name];
+	else if (window.getComputedStyle)
+		return window.getComputedStyle(o ,null).getPropertyValue(name);
 };
 
 A.onload = function(fn) {
@@ -270,15 +277,18 @@ A.domlst = {
 
   css: function(cssjson, val) {
     return this.each(function(i, o) {
-      var s = o.style || {}, a = cssjson;
+      var s = o.style || {}, a = cssjson, p;
       if (A.isString(a)) {
         if (!val) return s[a];
         if (s.hasOwnProperty(a)) s[a] = val;
       } else {
-        for (a in cssjson) {
-          if (s.hasOwnProperty(a)) s[a] = cssjson[a];
+        for (p in a) {
+          if (s.hasOwnProperty(p)) {
+            s[p] = a[p];
+          }
         }
       }
+      return o;
     });
   }
 
