@@ -15,7 +15,7 @@ A.isString = function(o) {
   return (!!o) && (o.constructor === String);
 };
 
-A.nvl = function (val, defval) {
+A.nvl = function (val, defval) { // null to "" || defval
   defval = defval || "";
   return val || defval;
 };
@@ -36,6 +36,13 @@ A.off = function(el, type, fn, capture) {
     el.detachEvent("on" + type, fn);
   }
   return el;
+};
+
+A.curStyle = function(o, name){
+	if (o.currentStyle)
+		return x.currentStyle[name];
+	else if (window.getComputedStyle)
+		return window.getComputedStyle(o ,null).getPropertyValue(name);
 };
 
 A.onload = function(fn) {

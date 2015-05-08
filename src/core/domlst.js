@@ -27,30 +27,41 @@ A.domlst = {
     return this;
   },
 
-  attr: function(name, val) {
-    return this.each(function(i, o) {
-      if (val) o.setAttribute(name, val);
-      return o.getAttribute(name);
-    });
-  },
-
   find: function(selector) {
     return this.each(function(i, o) {
       return A(selector, o);
     });
   },
 
+  attr: function(namejson, val) {
+    return this.each(function(i, o) {
+      var a = namejson, p;
+      if (A.isString(a)) {
+        if (!val) return o.getAttribute(a);
+        o.setAttribute(a, val);
+      } else {
+        for (p in a) {
+          o.setAttribute(p, a[p]);
+        }
+      }
+      return o;
+    });
+  },
+
   css: function(cssjson, val) {
     return this.each(function(i, o) {
-      var s = o.style || {}, a = cssjson;
+      var s = o.style || {}, a = cssjson, p;
       if (A.isString(a)) {
         if (!val) return s[a];
         if (s.hasOwnProperty(a)) s[a] = val;
       } else {
-        for (a in cssjson) {
-          if (s.hasOwnProperty(a)) s[a] = cssjson[a];
+        for (p in a) {
+          if (s.hasOwnProperty(p)) {
+            s[p] = a[p];
+          }
         }
       }
+      return o;
     });
   }
 
