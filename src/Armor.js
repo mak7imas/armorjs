@@ -22,6 +22,7 @@ var A = function(selector , context /*optional*/) {
       }
     } else {
       r = c.querySelectorAll(selector);
+      if (!r || !r.length) return null;
       if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
     }
     A.ext(r, A.domlst);
