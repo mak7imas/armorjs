@@ -1,5 +1,6 @@
 /*
   Armorjs.js
+  javascript library
 */
 
 (function() {
