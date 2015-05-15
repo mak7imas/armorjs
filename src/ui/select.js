@@ -24,15 +24,15 @@ A.ui.select = {
 
   _loadOptions: function() {
     var p = this.params, _this = this;
-    if (p.isOptLoaded) return;
+    if (!p.dictName || p.isOptLoaded) return;
     A.dict.load(p.dictName, p.dictHash,  function (dct) {
       var apv = p.prefval.split(","), i, itm, a1 = [], a2 = [];
       for (i=0, l=dct.items.length; i<l; i++) {
         var isp = false;
         itm = dct.items[i];
-        itm.sel = itm.cd == p.value;
+        itm.sel = itm.val == p.value;
         for (var j=0; j<apv.length; j++) {
-          if (itm.cd == apv[j]) {
+          if (itm.val == apv[j]) {
             a1[j] = itm;
             isp = true;
             break;
@@ -41,13 +41,27 @@ A.ui.select = {
         if (!isp) a2.push(itm);
       }
       a1 = a1.concat(a2);
-      _this.options.length = 0;
-      _this.options.add(new Option(' ', '-', 1));
-      for (i=0, l=a1.length; i<l; i++) {
-        itm = a1[i];
-        _this.options.add(new Option(itm.txt, itm.cd, 0, itm.sel));
-      }
+      _this.setOptions(a1, true);
       p.isOptLoaded = true;
     });
+  },
+
+  /*[{val:"",txt:"",sel:""},...]*/
+  setOptions: function(a, eo) { 
+    var i = 0, l = a.length, itm;
+    this.options.length = 0; // clear options
+    if (eo) this.options.add(new Option(' ', '-', 1));
+    for (; i<l; i++) {
+      itm = a[i];
+      this.options.add(new Option(itm.txt, itm.val, 0, itm.sel));
+    }
+  },
+
+  val: function(v) {
+    if (v) {
+      this.value = v;
+    }
+    return !this.options.length ? null: this.options[this.selectedIndex].value;
   }
+
 };

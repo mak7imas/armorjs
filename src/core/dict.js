@@ -10,7 +10,7 @@ A.dict = {
     dct = _this._getStorDct(name, hash);
     if (!dct) {
       if (cbl) cbl();
-      A.json("GET", this.params.url, {"name": name, "hash": hash}, function (dct) { // dct = {name, hach, items}
+      A.ajson("GET", this.params.url, {"name": name, "hash": hash}, function (dct) { // dct = {name, hach, items}
         _this._setStorDct(dct);
         if (cb) cb(dct);
       });

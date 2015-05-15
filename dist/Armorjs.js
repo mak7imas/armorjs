@@ -5,93 +5,138 @@
 
 (function() {
 
-"use strict";
+  "use strict";
 
-var _istag = /^<(\w+)\s*\/?>(?:<\/\1>|)$/;
+  var me = this;
 
-var A = function(selector , context /*optional*/) {
-  var r, p, c = context || document;
-  try {
-    if (A.isObject(selector)) {
-      r = selector;
-    } else if ((p = _istag.exec(selector))) {
-      r = document.createElement(p[1]);
-      if (A.isObject((c = context))) {
-        for (p in c) {
-          r.setAttribute(p, c[p]);
+  var _istag = /^<(\w+)\s*\/?>(?:<\/\1>|)$/;
+  var prevarmorjs = me.armorjs;
+  var prevA = me.A;
+
+  /**
+   * [A factory function]
+   * @selector {String}
+   * @context {[Object]}
+   */
+  var A = function(selector, context) {
+    var r, p, c = context || document;
+    try {
+      if (A.isObject(selector)) {
+        r = selector;
+      } else if ((p = _istag.exec(selector))) {
+        r = document.createElement(p[1]);
+        if (A.isObject((c = context))) {
+          for (p in c) {
+            r.setAttribute(p, c[p]);
+          }
         }
+      } else {
+        r = c.querySelectorAll(selector);
+        if (!r || !r.length) return null;
+        if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
+      }
+      A.ext(r, A.domlst);
+    } catch (e) {
+      r = null;
+    }
+    return r;
+  };
+
+  A.noConflict = function() {
+    if (me.A === armorjs) {
+      me.A = prevA;
+    }
+
+    if (me.armorjs === armorjs) {
+      me.armorjs = prevarmorjs;
+    }
+
+    return A;
+  };
+
+  A.VERSION = '0.0.1';
+
+  A.ui = {};
+
+  me.A = me.armorjs = A;
+  /**
+   * [uid create unique id value]
+   * @return {[Number]}
+   */
+  A.uid = function() {
+    if (!this._sequence) this._sequence = (new Date()).valueOf();
+    this._sequence++;
+    return this._sequence;
+  };
+  /**
+   * [forEach description]
+   * @o  {Array}
+   * @callback  {Function}
+   * @return {Array}
+   */
+  A.each = A.forEach = function(o, callback) {
+    var i = 0,
+      l = o.length;
+    if (A.isArrayType(o)) {
+      for (; i < l; i++) {
+        if (callback.call(o[i], i, o[i]) === false) break;
       }
     } else {
-      r = c.querySelectorAll(selector);
-      if (!r || !r.length) return null;
-      if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
+      return callback.call(o, i, o);
     }
-    A.ext(r, A.domlst);
-  } catch (e) {
-    r = null;
-  }
-  return r;
-};
-
-window.A = window.armorjs = A;
-
-A.ui = {};
-
-A.each = function(o, callback) {
-  var i = 0,
-    l = o.length;
-  if (A.isArrayType(o)) {
-    for (; i < l; i++) {
-      if (callback.call(o[i], i, o[i]) === false) break;
+    return o;
+  };
+  /**
+   * [clone object]
+   * @param  {Object}
+   * @return {Object}
+   */
+  A.clone = function(obj) {
+    //obj = obj || {};
+    var c, i = 0,
+      l = obj.length;
+    if (!obj || "object" != typeof obj) return obj;
+    if (obj instanceof Date) {
+      c = new Date();
+      c.setTime(obj.getTime());
+      return c;
     }
-  } else {
-    return callback.call(o, i, o);
-  }
-  return o;
-};
-
-A.clone = function(obj) {
-  //obj = obj || {};
-  var c, i = 0,
-    l = obj.length;
-  if (!obj || "object" != typeof obj) return obj;
-  if (obj instanceof Date) {
-    c = new Date();
-    c.setTime(obj.getTime());
-    return c;
-  }
-  if (obj instanceof Array) {
-    c = [];
-    for (; i < l; i++) {
-      c[i] = A.clone(obj[i]);
+    if (obj instanceof Array) {
+      c = [];
+      for (; i < l; i++) {
+        c[i] = A.clone(obj[i]);
+      }
+      return c;
     }
-    return c;
-  }
-  if (obj instanceof Object) {
-    c = {};
-    for (var a in obj) {
-      if (obj.hasOwnProperty(a)) c[a] = A.clone(obj[a]);
+    if (obj instanceof Object) {
+      c = {};
+      for (var a in obj) {
+        if (obj.hasOwnProperty(a)) c[a] = A.clone(obj[a]);
+      }
+      return c;
     }
-    return c;
-  }
-  return obj;
-};
-
-A.ext = function(dest) {
-  var ss = Array.prototype.slice.call(arguments, 1),
-    p, i, s;
-  for (i = 0; i < ss.length; i++) {
-    s = ss[i] || {};
-    for (p in s) {
-      if (s.hasOwnProperty(p)) {
-        dest[p] = A.clone(s[p]);
+    return obj;
+  };
+  /**
+   * [ext description]
+   * @param  {[type]}
+   * @return {[type]}
+   */
+  A.ext = function(dest) {
+    var ss = Array.prototype.slice.call(arguments, 1),
+      p, i, s;
+    for (i = 0; i < ss.length; i++) {
+      s = ss[i] || {};
+      for (p in s) {
+        if (s.hasOwnProperty(p)) {
+          dest[p] = A.clone(s[p]);
+        }
       }
     }
-  }
-  return dest;
-};
+    return dest;
+  };
 
-})();;/* ajax */
+}.call(this));;/* ajax */
 A.xhr = function() {
   return new XMLHttpRequest();
 };
@@ -100,7 +145,7 @@ A.stor = function() {
   return window.localStorage;
 };
 
-A.json = function(method, url, par, cb, cbe) {
+A.ajson = function(method, url, par, cb, cbe) {
   var x = A.xhr();
   x.onreadystatechange = function() {
     if (x.readyState == 4 && x.status == 200) {
@@ -114,7 +159,7 @@ A.json = function(method, url, par, cb, cbe) {
 				}
         cb(rj);
 			} catch (e) {
-			  if (cbe) cbe(e);
+			  if (cbe) cbe(e, rr);
 			}
     }
   };
@@ -199,7 +244,7 @@ A.dict = {
     dct = _this._getStorDct(name, hash);
     if (!dct) {
       if (cbl) cbl();
-      A.json("GET", this.params.url, {"name": name, "hash": hash}, function (dct) { // dct = {name, hach, items}
+      A.ajson("GET", this.params.url, {"name": name, "hash": hash}, function (dct) { // dct = {name, hach, items}
         _this._setStorDct(dct);
         if (cb) cb(dct);
       });
@@ -611,15 +656,15 @@ A.ui.select = {
 
   _loadOptions: function() {
     var p = this.params, _this = this;
-    if (p.isOptLoaded) return;
+    if (!p.dictName || p.isOptLoaded) return;
     A.dict.load(p.dictName, p.dictHash,  function (dct) {
       var apv = p.prefval.split(","), i, itm, a1 = [], a2 = [];
       for (i=0, l=dct.items.length; i<l; i++) {
         var isp = false;
         itm = dct.items[i];
-        itm.sel = itm.cd == p.value;
+        itm.sel = itm.val == p.value;
         for (var j=0; j<apv.length; j++) {
-          if (itm.cd == apv[j]) {
+          if (itm.val == apv[j]) {
             a1[j] = itm;
             isp = true;
             break;
@@ -628,13 +673,27 @@ A.ui.select = {
         if (!isp) a2.push(itm);
       }
       a1 = a1.concat(a2);
-      _this.options.length = 0;
-      _this.options.add(new Option(' ', '-', 1));
-      for (i=0, l=a1.length; i<l; i++) {
-        itm = a1[i];
-        _this.options.add(new Option(itm.txt, itm.cd, 0, itm.sel));
-      }
+      _this.setOptions(a1, true);
       p.isOptLoaded = true;
     });
+  },
+
+  /*[{val:"",txt:"",sel:""},...]*/
+  setOptions: function(a, eo) { 
+    var i = 0, l = a.length, itm;
+    this.options.length = 0; // clear options
+    if (eo) this.options.add(new Option(' ', '-', 1));
+    for (; i<l; i++) {
+      itm = a[i];
+      this.options.add(new Option(itm.txt, itm.val, 0, itm.sel));
+    }
+  },
+
+  val: function(v) {
+    if (v) {
+      this.value = v;
+    }
+    return !this.options.length ? null: this.options[this.selectedIndex].value;
   }
+
 };

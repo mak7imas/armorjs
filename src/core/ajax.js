@@ -7,7 +7,7 @@ A.stor = function() {
   return window.localStorage;
 };
 
-A.json = function(method, url, par, cb, cbe) {
+A.ajson = function(method, url, par, cb, cbe) {
   var x = A.xhr();
   x.onreadystatechange = function() {
     if (x.readyState == 4 && x.status == 200) {
@@ -21,7 +21,7 @@ A.json = function(method, url, par, cb, cbe) {
 				}
         cb(rj);
 			} catch (e) {
-			  if (cbe) cbe(e);
+			  if (cbe) cbe(e, rr);
 			}
     }
   };
