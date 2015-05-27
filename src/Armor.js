@@ -32,8 +32,8 @@
         }
       } else {
         r = c.querySelectorAll(selector);
-        if (!r || !r.length) return null;
-        if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
+        if (!r || !r.length) r = {_emptyObj: true};
+        else if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
       }
       A.ext(r, A.domlst);
     } catch (e) {
@@ -123,6 +123,7 @@
    * @return {[type]}
    */
   A.ext = function(dest) {
+    dest = dest || {};
     var ss = Array.prototype.slice.call(arguments, 1),
       p, i, s;
     for (i = 0; i < ss.length; i++) {

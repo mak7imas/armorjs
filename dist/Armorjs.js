@@ -32,8 +32,8 @@
         }
       } else {
         r = c.querySelectorAll(selector);
-        if (!r || !r.length) return null;
-        if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
+        if (!r || !r.length) r = {_emptyObj: true};
+        else if (A.isArrayType(r) && r.length == 1 && selector.substr(0, 1) == "#") r = r[0];
       }
       A.ext(r, A.domlst);
     } catch (e) {
@@ -123,6 +123,7 @@
    * @return {[type]}
    */
   A.ext = function(dest) {
+    dest = dest || {};
     var ss = Array.prototype.slice.call(arguments, 1),
       p, i, s;
     for (i = 0; i < ss.length; i++) {
@@ -244,21 +245,23 @@ A.dict = {
     dct = _this._getStorDct(name, hash);
     if (!dct) {
       if (cbl) cbl();
-      A.ajson("GET", this.params.url, {"name": name, "hash": hash}, function (dct) { // dct = {name, hach, items}
+      A.ajson("GET", this.params.url, {"NAME": name, "HASH": hash}, function (dct) { // dct = {NAME, HASH, ITEMS}
         _this._setStorDct(dct);
         if (cb) cb(dct);
+      }, function (e, t){
+        alert("error load dict '" + name + "': " + e);
       });
     } else {
       if (cb) cb(dct);
     }
   },
 
-  _setStorDct: function(dct) { // dct = {name, hach, items}
+  _setStorDct: function(dct) { 
     var stor = A.stor(), dctlst = this.params.dctlst;
     if (stor) {
       try {
-        stor.setItem(dct.name, JSON.stringify(dct));
-        dctlst[name] = dct; 
+        stor.setItem(dct.NAME, JSON.stringify(dct));
+        dctlst[dct.NAME] = dct; 
       } catch (e) {
         console.log("storage is full");
         stor.clear();
@@ -273,7 +276,7 @@ A.dict = {
       if (stor) {
         try {
           dct = JSON.parse(stor.getItem(name));
-          if (!dct || (hash && dct.hash != hash)) 
+          if (!dct || (hash && dct.HASH != hash)) 
             dct = null;
           else
             dctlst[name] = dct;
@@ -293,11 +296,13 @@ A.domlst = {
   },
 
   ext: function(obj) {
-    this.each(function(i, o) {
-      var r = A.ext(o, A.domlst, obj);
-      if (o.init) o.init();
-      return r;
-    });
+    if (!this.ieo()) {
+      this.each(function(i, o) {
+        var r = A.ext(o, A.domlst, obj);
+        if (o.init) o.init();
+        return r;
+      });
+    }
     return this;
   },
 
@@ -351,8 +356,12 @@ A.domlst = {
       }
       return o;
     });
-  }
+  },
 
+  // is empty object
+  ieo: function() {
+    return this._emptyObj === true;
+  }
 };
 ;armorjs.env = {};
 
@@ -657,14 +666,19 @@ A.ui.select = {
   _loadOptions: function() {
     var p = this.params, _this = this;
     if (!p.dictName || p.isOptLoaded) return;
+
+    this.options.length = 0; // clear options
+    this.options.add(new Option("loading...", '-', 0, true));
+    this.selectedIndex = 0;
+
     A.dict.load(p.dictName, p.dictHash,  function (dct) {
       var apv = p.prefval.split(","), i, itm, a1 = [], a2 = [];
-      for (i=0, l=dct.items.length; i<l; i++) {
+      for (i=0, l=dct.ITEMS.length; i<l; i++) {
         var isp = false;
-        itm = dct.items[i];
-        itm.sel = itm.val == p.value;
+        itm = dct.ITEMS[i];
+        //itm.SEL = itm.VAL == p.value;
         for (var j=0; j<apv.length; j++) {
-          if (itm.val == apv[j]) {
+          if (itm.VAL == apv[j]) {
             a1[j] = itm;
             isp = true;
             break;
@@ -678,22 +692,25 @@ A.ui.select = {
     });
   },
 
-  /*[{val:"",txt:"",sel:""},...]*/
+  /*[{VAL:"",TXT:"",SEL:""},...]*/
   setOptions: function(a, eo) { 
-    var i = 0, l = a.length, itm;
     this.options.length = 0; // clear options
+    var p = this.params, i = 0, l = a.length, itm, v =  this.val();
     if (eo) this.options.add(new Option(' ', '-', 1));
     for (; i<l; i++) {
       itm = a[i];
-      this.options.add(new Option(itm.txt, itm.val, 0, itm.sel));
+      //itm.SEL = itm.VAL == p.value;
+      this.options.add(new Option(itm.TXT, itm.VAL, 0, itm.SEL));
     }
+    if (!v  && eo) v = "-";
+    this.val(v);
   },
 
   val: function(v) {
-    if (v) {
-      this.value = v;
+    if (v !== undefined) {
+      this.value = this.params.value = v;
     }
-    return !this.options.length ? null: this.options[this.selectedIndex].value;
+    return this.options.length && this.selectedIndex>=0 ? this.options[this.selectedIndex].value : (this.value ? this.value : this.params.value);
   }
 
 };

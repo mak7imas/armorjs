@@ -10,21 +10,23 @@ A.dict = {
     dct = _this._getStorDct(name, hash);
     if (!dct) {
       if (cbl) cbl();
-      A.ajson("GET", this.params.url, {"name": name, "hash": hash}, function (dct) { // dct = {name, hach, items}
+      A.ajson("GET", this.params.url, {"NAME": name, "HASH": hash}, function (dct) { // dct = {NAME, HASH, ITEMS}
         _this._setStorDct(dct);
         if (cb) cb(dct);
+      }, function (e, t){
+        alert("error load dict '" + name + "': " + e);
       });
     } else {
       if (cb) cb(dct);
     }
   },
 
-  _setStorDct: function(dct) { // dct = {name, hach, items}
+  _setStorDct: function(dct) { 
     var stor = A.stor(), dctlst = this.params.dctlst;
     if (stor) {
       try {
-        stor.setItem(dct.name, JSON.stringify(dct));
-        dctlst[name] = dct; 
+        stor.setItem(dct.NAME, JSON.stringify(dct));
+        dctlst[dct.NAME] = dct; 
       } catch (e) {
         console.log("storage is full");
         stor.clear();
@@ -39,7 +41,7 @@ A.dict = {
       if (stor) {
         try {
           dct = JSON.parse(stor.getItem(name));
-          if (!dct || (hash && dct.hash != hash)) 
+          if (!dct || (hash && dct.HASH != hash)) 
             dct = null;
           else
             dctlst[name] = dct;

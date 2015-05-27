@@ -5,11 +5,13 @@ A.domlst = {
   },
 
   ext: function(obj) {
-    this.each(function(i, o) {
-      var r = A.ext(o, A.domlst, obj);
-      if (o.init) o.init();
-      return r;
-    });
+    if (!this.ieo()) {
+      this.each(function(i, o) {
+        var r = A.ext(o, A.domlst, obj);
+        if (o.init) o.init();
+        return r;
+      });
+    }
     return this;
   },
 
@@ -63,6 +65,10 @@ A.domlst = {
       }
       return o;
     });
-  }
+  },
 
+  // is empty object
+  ieo: function() {
+    return this._emptyObj === true;
+  }
 };

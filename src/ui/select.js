@@ -25,14 +25,19 @@ A.ui.select = {
   _loadOptions: function() {
     var p = this.params, _this = this;
     if (!p.dictName || p.isOptLoaded) return;
+
+    this.options.length = 0; // clear options
+    this.options.add(new Option("loading...", '-', 0, true));
+    this.selectedIndex = 0;
+
     A.dict.load(p.dictName, p.dictHash,  function (dct) {
       var apv = p.prefval.split(","), i, itm, a1 = [], a2 = [];
-      for (i=0, l=dct.items.length; i<l; i++) {
+      for (i=0, l=dct.ITEMS.length; i<l; i++) {
         var isp = false;
-        itm = dct.items[i];
-        itm.sel = itm.val == p.value;
+        itm = dct.ITEMS[i];
+        //itm.SEL = itm.VAL == p.value;
         for (var j=0; j<apv.length; j++) {
-          if (itm.val == apv[j]) {
+          if (itm.VAL == apv[j]) {
             a1[j] = itm;
             isp = true;
             break;
@@ -46,22 +51,25 @@ A.ui.select = {
     });
   },
 
-  /*[{val:"",txt:"",sel:""},...]*/
+  /*[{VAL:"",TXT:"",SEL:""},...]*/
   setOptions: function(a, eo) { 
-    var i = 0, l = a.length, itm;
     this.options.length = 0; // clear options
+    var p = this.params, i = 0, l = a.length, itm, v =  this.val();
     if (eo) this.options.add(new Option(' ', '-', 1));
     for (; i<l; i++) {
       itm = a[i];
-      this.options.add(new Option(itm.txt, itm.val, 0, itm.sel));
+      //itm.SEL = itm.VAL == p.value;
+      this.options.add(new Option(itm.TXT, itm.VAL, 0, itm.SEL));
     }
+    if (!v  && eo) v = "-";
+    this.val(v);
   },
 
   val: function(v) {
-    if (v) {
-      this.value = v;
+    if (v !== undefined) {
+      this.value = this.params.value = v;
     }
-    return !this.options.length ? null: this.options[this.selectedIndex].value;
+    return this.options.length && this.selectedIndex>=0 ? this.options[this.selectedIndex].value : (this.value ? this.value : this.params.value);
   }
 
 };
