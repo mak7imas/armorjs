@@ -296,7 +296,7 @@ A.domlst = {
   },
 
   ext: function(obj) {
-    if (!this.ieo()) {
+    if (!this.isNull()) {
       this.each(function(i, o) {
         var r = A.ext(o, A.domlst, obj);
         if (o.init) o.init();
@@ -359,7 +359,7 @@ A.domlst = {
   },
 
   // is empty object
-  ieo: function() {
+  isNull: function() {
     return this._emptyObj === true;
   }
 };
